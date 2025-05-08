@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)  # تمكين CORS للجميع (*)
 
 # إعدادات Hugging Face API
-HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+HF_API_URL = "https://api-inference.huggingface.co/models/bigscience/bloomz"
 HF_TOKEN = os.getenv("HF_TOKEN")  # مفتاح API من إعدادات Vercel
 
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}

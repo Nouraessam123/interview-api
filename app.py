@@ -18,21 +18,26 @@ headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 # ---- دوال مساعدة ----
 def generate_text(prompt):
-    """إرسال طلب إلى Hugging Face API لتوليد النص"""
     try:
         response = requests.post(
             HF_API_URL,
             headers=headers,
-            json={
-                "inputs": prompt,
-                "parameters": {"max_length": 300}  # للتحكم في طول الإجابة
-            },
-            timeout=15  # حد أقصى للانتظار (ثانية)
+            json={"inputs": prompt, "parameters": {"max_length": 100}},  # قلل max_length لتسريع الاستجابة
+            timeout=10  # قلل وقت الانتظار
         )
-        if response.status_code == 200:
-            return response.json()[0]["generated_text"]
+        response_data = response.json()
+        
+        # Debugging: سجّل الاستجابة كاملة
+        print("Hugging Face Response:", response_data)
+        
+        if isinstance(response_data, list) and len(response_data) > 0:
+            return response_data[0].get("generated_text", "No text generated")
+        elif isinstance(response_data, dict) and "error" in response_data:
+            return f"Error: {response_data['error']}"
         else:
-            return f"Error: {response.text}"
+            return f"Unexpected response: {response_data}"
+    except requests.exceptions.Timeout:
+        return "Error: Hugging Face API timeout"
     except Exception as e:
         return f"API Error: {str(e)}"
 
@@ -59,13 +64,18 @@ def generate_questions():
     data = request.get_json()
     job_role = data.get("job_role", "Software Engineer")  # قيمة افتراضية
 
-    # إنشاء الـ prompt
+    # إنشاء الـ prompt (معدّل)
     prompt = f"""
-    Generate 3 technical and 2 behavioral interview questions for a {job_role} role.
-    Format them as a numbered list in English.
-    Example:
-    1. Question one?
-    2. Question two?
+    Generate exactly 5 interview questions for a {job_role} role:
+    - 3 Technical questions.
+    - 2 Non-technical (behavioral or situational) questions.
+    
+    Format strictly as:
+    1. [Technical question one]?
+    2. [Technical question two]?
+    3. [Technical question three]?
+    4. [Non-technical question one]?
+    5. [Non-technical question two]?
     """
 
     # توليد الأسئلة
@@ -77,7 +87,6 @@ def generate_questions():
         "success": True,
         "questions": questions if questions else ["Could not generate questions. Try again later."]
     })
-
 @app.route("/evaluate-answer", methods=["POST"])
 def evaluate_answer():
     # التحقق من البيانات المدخلة

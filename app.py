@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)  # تمكين CORS للجميع (*)
 
 # إعدادات Hugging Face API
-HF_API_URL = "meta-llama/Llama-2-7b-chat-hf"
+HF_API_URL = "https://meta-llama/Llama-2-7b-chat-hf"
 HF_TOKEN = os.getenv("HF_TOKEN")  # مفتاح API من إعدادات Vercel
 
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}

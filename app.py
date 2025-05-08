@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)  # تمكين CORS للجميع (*)
 
 # إعدادات Hugging Face API
-HF_API_URL = "https://api-inference.huggingface.co/models/bigscience/bloomz"
+HF_API_URL = "meta-llama/Llama-2-7b-chat-hf"
 HF_TOKEN = os.getenv("HF_TOKEN")  # مفتاح API من إعدادات Vercel
 
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
@@ -42,8 +42,16 @@ def generate_text(prompt):
         return f"API Error: {str(e)}"
 
 def extract_questions(text):
-    """استخراج الأسئلة المرقمة من النص"""
-    return [q.strip() for q in re.findall(r'\d+\.\s*(.*?[.?])', text)]
+    lines = text.strip().split("\n")
+    questions = []
+    for line in lines:
+        line = line.strip()
+        match = re.match(r'^\d+\.\s*(.*)', line)
+        if match:
+            questions.append(match.group(1).strip())
+        elif "?" in line:  # سؤال بدون رقم
+            questions.append(line)
+    return questions
 
 def analyze_sentiment(text):
     """تحليل مشاعر النص باستخدام TextBlob"""
@@ -87,6 +95,8 @@ def generate_questions():
         "success": True,
         "questions": questions if questions else ["Could not generate questions. Try again later."]
     })
+    print("Generated Text:", generated_text)
+
 @app.route("/evaluate-answer", methods=["POST"])
 def evaluate_answer():
     # التحقق من البيانات المدخلة

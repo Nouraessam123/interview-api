@@ -12,24 +12,27 @@ app = Flask(__name__)
 CORS(app)  # تمكين CORS للجميع (*)
 
 # إعدادات Hugging Face API
-HF_API_URL = "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf"
-HF_TOKEN = os.getenv("HF_TOKEN")  # مفتاح API من إعدادات Vercel
-headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+# إعدادات Hugging Face API المحدثة
+HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat"
+HF_TOKEN = os.getenv("HF_TOKEN")  # تأكد من صحة المفتاح!
+headers = {
+    "Authorization": f"Bearer {HF_TOKEN}",
+    "Content-Type": "application/json"
+}
 
-# ---- دوال مساعدة ----
 def generate_text(prompt):
-    """إرسال طلب إلى Hugging Face API لتوليد النص."""
     try:
         response = requests.post(
             HF_API_URL,
             headers=headers,
             json={"inputs": prompt, "parameters": {"max_length": 100}},
-            timeout=10  # حد زمني للطلب
+            timeout=15  # زيادة الوقت المسموح
         )
-        response.raise_for_status()  # رفع خطأ إذا كانت الاستجابة غير ناجحة
+        if response.status_code == 404:
+            return {"error": "Model not found. Check the URL or model name."}
         return response.json()
-    except requests.exceptions.RequestException as e:
-        return {"error": f"API Request Failed: {str(e)}"}
+    except Exception as e:
+        return {"error": str(e)}
 
 def extract_questions(text):
     """استخراج الأسئلة من النص المُولد باستخدام التعبير النمطي."""

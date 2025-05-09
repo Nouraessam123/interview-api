@@ -13,7 +13,7 @@ CORS(app)  # تمكين CORS للجميع (*)
 
 # إعدادات Hugging Face API
 # إعدادات Hugging Face API المحدثة
-HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat"
+HF_API_URL = "https://huggingface.co/deepseek-ai/DeepSeek-R1"
 HF_TOKEN = os.getenv("HF_TOKEN")  # تأكد من صحة المفتاح!
 headers = {
     "Authorization": f"Bearer {HF_TOKEN}",
